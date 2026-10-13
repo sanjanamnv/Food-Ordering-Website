@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBite - Personalized Food Recommendations | FoodNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .mood-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .mood-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .mood-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .mood-icon {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+    .mood-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--charcoal);
+    }
+    .cache-inspector {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wordmark">
+        <div class="brand-badge">FN</div>
+        <span>FoodNest</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="restaurants.html">Restaurants</a>
+        <a href="smartbite.html" class="active">SmartBite</a>
+        <a href="orders.html">My Orders</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-trigger" aria-label="Shopping Cart">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count" style="display:none;">0</span>
+        </a>
+        <div id="user-nav-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 36px 24px 64px;">
+    <!-- Headline -->
+    <div style="margin-bottom: 28px;">
+      <div style="display:inline-flex; align-items:center; gap:8px; background:#fff7ed; border:1px solid #ffedd5; color:#c2410c; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:8px;">
+        <span>✨ PERSONALIZED RECOMMENDATIONS</span>
+      </div>
+      <h1 style="font-size:2.4rem; color:var(--charcoal);">SmartBite — Find Your Perfect Meal</h1>
+      <p style="color:var(--text-muted); font-size:1.05rem; max-width:750px;">
+        Tell SmartBite what you're craving, set your budget or dietary preferences, and discover curated dishes tailored specifically for your taste.
+      </p>
+    </div>
+
+    <!-- Step 1: Select Mood -->
+    <div class="card" style="padding:28px; margin-bottom:28px;">
+      <h2 style="font-size:1.25rem; margin-bottom:16px;">1. Select Your Current Food Craving or Mood</h2>
+
+      <div class="mood-grid">
+        <div class="mood-card selected" data-mood="comfort">
+          <div class="mood-icon">🍲</div>
+          <div class="mood-title">Comfort Food</div>
+        </div>
+        <div class="mood-card" data-mood="spicy">
+          <div class="mood-icon">🌶️</div>
+          <div class="mood-title">Spicy Cravings</div>
+        </div>
+        <div class="mood-card" data-mood="healthy">
+          <div class="mood-icon">🥗</div>
+          <div class="mood-title">Healthy Choice</div>
+        </div>
+        <div class="mood-card" data-mood="budget">
+          <div class="mood-icon">💰</div>
+          <div class="mood-title">Budget Meals</div>
+        </div>
+        <div class="mood-card" data-mood="quick">
+          <div class="mood-icon">⚡</div>
+          <div class="mood-title">Quick Bites</div>
+        </div>
+        <div class="mood-card" data-mood="sweet">
+          <div class="mood-icon">🍨</div>
+          <div class="mood-title">Sweet Tooth</div>
+        </div>
+        <div class="mood-card" data-mood="vegetarian">
+          <div class="mood-icon">🌱</div>
+          <div class="mood-title">Veg Favorites</div>
+        </div>
+      </div>
+
+      <!-- Filters Row -->
+      <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center; border-top:1px solid var(--border); padding-top:20px;">
+        <div>
+          <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px; color:var(--text-muted);">Max Budget (₹)</label>
+          <select id="rec-budget" style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit; background:white;">
+            <option value="">Any Budget</option>
+            <option value="150">Under ₹150</option>
+            <option value="250">Under ₹250</option>
+            <option value="350">Under ₹350</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px; color:var(--text-muted);">Preferred Cuisine</label>
+          <select id="rec-cuisine" style="padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit; background:white;">
+            <option value="all">All Cuisines</option>
+            <option value="Biryani">Biryani</option>
+            <option value="Indian">North/South Indian</option>
+            <option value="Pizza">Pizza / Italian</option>
+            <option value="Chinese">Chinese / Asian</option>
+            <option value="Burgers">Burgers</option>
+            <option value="Desserts">Desserts</option>
+          </select>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-top:20px;">
+          <input type="checkbox" id="rec-veg-only" style="width:18px; height:18px; accent-color:#16a34a;">
+          <label for="rec-veg-only" style="font-size:0.9rem; font-weight:600; cursor:pointer;">Strictly Vegetarian</label>
+        </div>
+
+        <div style="margin-top:20px; margin-left:auto;">
+          <button id="get-recommendations-btn" class="btn btn-primary">Find My Meals</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations Grid -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="font-size:1.4rem;">SmartBite Matches</h2>
+        <span id="results-count" style="font-size:0.9rem; color:var(--text-muted);"></span>
+      </div>
+
+      <div id="recommendations-grid" class="grid-3">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let selectedMood = 'comfort';
+
+    document.querySelectorAll('.mood-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedMood = card.dataset.mood;
+        fetchRecommendations();
+      });
+    });
+
+    document.getElementById('get-recommendations-btn').addEventListener('click', fetchRecommendations);
+
+    async function fetchRecommendations() {
+      const budget = document.getElementById('rec-budget').value;
+      const cuisine = document.getElementById('rec-cuisine').value;
+      const vegOnly = document.getElementById('rec-veg-only').checked;
+      const grid = document.getElementById('recommendations-grid');
+
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:48px; color:var(--text-muted);">Finding dishes matched to your craving...</div>';
+
+      try {
+        const res = await api.getSmartBiteRecommendations(
+          selectedMood,
+          budget ? parseFloat(budget) : null,
+          vegOnly,
+          cuisine
+        );
+
+        document.getElementById('results-count').textContent = `Found ${res.totalFound || (res.recommendations ? res.recommendations.length : 0)} tailored dishes`;
+
+        if (!res.recommendations || res.recommendations.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-muted);">No dishes found matching this specific filter combination. Try loosening budget or cuisine filters!</div>';
+          return;
+        }
+
+        grid.innerHTML = res.recommendations.map(rec => {
+          const item = rec.foodItem;
+          return `
+            <div class="card food-card">
+              <div class="food-img-wrap">
+                <img src="${item.imageUrl}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'">
+              </div>
+              <div class="food-body">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                    <h3 style="font-size:1.15rem;">${item.name}</h3>
+                    <span class="${item.vegetarian ? 'veg-indicator' : 'non-veg-indicator'}"></span>
+                  </div>
+                  <span style="font-size:0.8rem; color:var(--text-muted);">${item.restaurantName}</span>
+                  <div class="smartbite-badge" style="margin:8px 0;">
+                    💡 ${rec.matchReason}
+                  </div>
+                  <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">${item.description}</p>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid #f1f5f9; padding-top:12px;">
+                  <span style="font-size:1.25rem; font-weight:800; color:var(--charcoal);" class="tabular">₹${item.price}</span>
+                  <button class="btn btn-primary btn-sm" onclick='addToCart(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Add to Cart</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:48px; color:#dc2626;">Error: ${err.message}</div>`;
+      }
+    }
+
+    window.addToCart = (item) => {
+      cart.addItem(item, 1);
+    };
+
+    document.addEventListener('DOMContentLoaded', fetchRecommendations);
+  </script>
+</body>
+</html>

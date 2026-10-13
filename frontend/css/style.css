@@ -1,0 +1,405 @@
+/* =========================================================
+   FoodNest - Modern Food Ordering Platform Stylesheet
+   Palette: Warm Orange (#EA580C / #F97316), Cream (#FFFBEB),
+            Charcoal (#1E293B / #0F172A), Crisp White (#FFFFFF)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-light: #ffedd5;
+  --bg-main: #f8fafc;
+  --surface: #ffffff;
+  --charcoal: #0f172a;
+  --text-primary: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Container */
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  color: var(--charcoal);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Header & Top Bar Contract: 3 Zones */
+header.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  height: 72px;
+}
+
+/* Zone 1: Brand Wordmark */
+.brand-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  white-space: nowrap;
+}
+
+.brand-badge {
+  background: var(--primary);
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+/* Zone 2: Navigation Links */
+nav.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+nav.nav-links a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+nav.nav-links a:hover,
+nav.nav-links a.active {
+  color: var(--primary);
+}
+
+/* Zone 3: Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+.btn-secondary:hover {
+  background-color: #f1f5f9;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+.btn-outline:hover {
+  background: var(--primary-light);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+/* Cart Badge */
+.cart-trigger {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--charcoal);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.cart-trigger:hover {
+  border-color: var(--primary);
+}
+
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Restaurant Card */
+.restaurant-card {
+  display: flex;
+  flex-direction: column;
+}
+.restaurant-card .image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+.restaurant-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.restaurant-card:hover img {
+  transform: scale(1.04);
+}
+.restaurant-card .card-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Food Item Card */
+.food-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.food-card .food-img-wrap {
+  position: relative;
+  height: 170px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+.food-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.food-card .food-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+/* Vegetarian / Non-Veg Indicator */
+.veg-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #16a34a;
+  border-radius: 3px;
+  padding: 2px;
+}
+.veg-indicator::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: #16a34a;
+  border-radius: 50%;
+}
+
+.non-veg-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #dc2626;
+  border-radius: 3px;
+  padding: 2px;
+}
+.non-veg-indicator::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: #dc2626;
+  border-radius: 50%;
+}
+
+/* Metadata Text (Zero-Pill Discipline) */
+.metadata-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.metadata-sep {
+  opacity: 0.5;
+}
+
+/* SmartBite Highlight Box */
+.smartbite-badge {
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  color: #c2410c;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Grid Layouts */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+/* Toast Notification */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 20px;
+  background: var(--charcoal);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Footer */
+footer.footer {
+  margin-top: auto;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 48px 0 24px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}

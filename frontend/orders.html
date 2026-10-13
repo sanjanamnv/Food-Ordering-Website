@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - FoodNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Order Timeline Styles */
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 24px 0 16px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      right: 20px;
+      height: 3px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .timeline-step {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .timeline-dot {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+    .timeline-step.completed .timeline-dot {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: white;
+    }
+    .timeline-step.completed {
+      color: #16a34a;
+    }
+    .timeline-step.active .timeline-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 0 0 4px #ffedd5;
+    }
+    .timeline-step.active {
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wordmark">
+        <div class="brand-badge">FN</div>
+        <span>FoodNest</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="restaurants.html">Restaurants</a>
+        <a href="smartbite.html">SmartBite</a>
+        <a href="orders.html" class="active">My Orders</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-trigger" aria-label="Shopping Cart">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count" style="display:none;">0</span>
+        </a>
+        <div id="user-nav-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 36px 24px 64px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+      <div>
+        <h1 style="font-size:2rem;">Your Order History</h1>
+        <p style="color:var(--text-muted); font-size:0.95rem;">Real-time order lifecycle tracking and past delivery receipts</p>
+      </div>
+      <button id="refresh-orders-btn" class="btn btn-secondary btn-sm">Refresh Orders</button>
+    </div>
+
+    <div id="orders-list" style="display:flex; flex-direction:column; gap:24px;">
+      <div class="card" style="padding:48px; text-align:center; color:var(--text-muted);">
+        Loading your order history...
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const STAGES = ['ORDER_PLACED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-list');
+      if (!api.currentUser) {
+        container.innerHTML = `
+          <div class="card" style="padding:48px; text-align:center;">
+            <p style="margin-bottom:16px;">Please sign in to view your orders.</p>
+            <a href="login.html?redirect=orders.html" class="btn btn-primary">Sign In</a>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const orders = await api.getMyOrders();
+        if (!orders || orders.length === 0) {
+          container.innerHTML = `
+            <div class="card" style="padding:60px; text-align:center;">
+              <div style="font-size:3rem; margin-bottom:12px;">📦</div>
+              <h3 style="font-size:1.3rem; margin-bottom:8px;">No orders placed yet</h3>
+              <p style="color:var(--text-muted); margin-bottom:20px;">Explore our restaurants and place your first delicious order!</p>
+              <a href="restaurants.html" class="btn btn-primary">Order Food Now</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(order => renderOrderCard(order)).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="card" style="padding:48px; text-align:center; color:#dc2626;">Failed to load orders: ${err.message}</div>`;
+      }
+    }
+
+    function renderOrderCard(order) {
+      const currentIdx = STAGES.indexOf(order.orderStatus);
+      const isCancelled = order.orderStatus === 'CANCELLED';
+      const canCancel = (order.orderStatus === 'ORDER_PLACED' || order.orderStatus === 'CONFIRMED') && !isCancelled;
+
+      return `
+        <div class="card" style="padding:24px;">
+          <!-- Top Row -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:1.15rem; font-weight:800; color:var(--charcoal);">${order.orderNumber}</span>
+                <span style="background:${isCancelled ? '#fee2e2' : '#f0fdf4'}; color:${isCancelled ? '#dc2626' : '#15803d'}; font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px;">
+                  ${order.orderStatus.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div class="metadata-line" style="margin-top:4px;">
+                <span>${order.restaurantName}</span>
+                <span class="metadata-sep">·</span>
+                <span>${new Date(order.createdAt).toLocaleString()}</span>
+                <span class="metadata-sep">·</span>
+                <span>Payment: ${order.paymentMethod === 'CASH_ON_DELIVERY' ? 'COD' : 'Online UPI'} (${order.paymentStatus})</span>
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <span style="font-size:1.25rem; font-weight:800; color:var(--primary);" class="tabular">₹${order.totalAmount.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <!-- Status Timeline (if not cancelled) -->
+          ${!isCancelled ? `
+            <div class="timeline">
+              <div class="timeline-step ${currentIdx > 0 ? 'completed' : (currentIdx === 0 ? 'active' : '')}">
+                <div class="timeline-dot">${currentIdx > 0 ? '✓' : '1'}</div>
+                <span>Placed</span>
+              </div>
+              <div class="timeline-step ${currentIdx > 1 ? 'completed' : (currentIdx === 1 ? 'active' : '')}">
+                <div class="timeline-dot">${currentIdx > 1 ? '✓' : '2'}</div>
+                <span>Confirmed</span>
+              </div>
+              <div class="timeline-step ${currentIdx > 2 ? 'completed' : (currentIdx === 2 ? 'active' : '')}">
+                <div class="timeline-dot">${currentIdx > 2 ? '✓' : '3'}</div>
+                <span>Preparing</span>
+              </div>
+              <div class="timeline-step ${currentIdx > 3 ? 'completed' : (currentIdx === 3 ? 'active' : '')}">
+                <div class="timeline-dot">${currentIdx > 3 ? '✓' : '4'}</div>
+                <span>On the Way</span>
+              </div>
+              <div class="timeline-step ${currentIdx === 4 ? 'completed' : ''}">
+                <div class="timeline-dot">${currentIdx === 4 ? '✓' : '5'}</div>
+                <span>Delivered</span>
+              </div>
+            </div>
+          ` : `
+            <div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; padding:12px; margin:16px 0; font-size:0.85rem; color:#dc2626;">
+              <strong>Order Cancelled:</strong> ${order.cancellationReason || 'Cancelled upon customer request'}
+            </div>
+          `}
+
+          <!-- Items list -->
+          <div style="margin:16px 0; background:#f8fafc; border-radius:10px; padding:14px; font-size:0.88rem;">
+            ${order.items.map(i => `
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>${i.quantity} × ${i.name}</span>
+                <span class="tabular font-weight-600">₹${i.itemTotal.toFixed(2)}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display:flex; justify-content:space-between; align-items:center; pt-2;">
+            <span style="font-size:0.82rem; color:var(--text-muted);">
+              Delivering to: ${order.deliveryAddress ? order.deliveryAddress.street + ', ' + order.deliveryAddress.city : 'Saved Address'}
+            </span>
+            <div style="display:flex; gap:10px;">
+              ${canCancel ? `<button class="btn btn-sm btn-secondary" style="color:#dc2626;" onclick="cancelOrderPrompt('${order.id}')">Cancel Order</button>` : ''}
+              <button class="btn btn-sm btn-outline" onclick='reorderItems(${JSON.stringify(order.items).replace(/'/g, "&#39;")})'>Reorder Dishes</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.cancelOrderPrompt = async (orderId) => {
+      const reason = prompt('Please specify a reason for cancellation:');
+      if (reason === null) return;
+      try {
+        await api.cancelOrder(orderId, reason || 'Cancelled by customer');
+        showToast('Order cancelled successfully', 'info');
+        loadOrders();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+
+    window.reorderItems = (items) => {
+      items.forEach(item => {
+        cart.addItem({
+          id: item.foodItemId,
+          name: item.name,
+          price: item.unitPrice,
+          vegetarian: item.vegetarian,
+          imageUrl: item.imageUrl
+        }, item.quantity);
+      });
+      showToast('Items added to basket! Redirecting to cart...', 'success');
+      setTimeout(() => window.location.href = 'cart.html', 800);
+    };
+
+    document.getElementById('refresh-orders-btn').addEventListener('click', loadOrders);
+    document.addEventListener('DOMContentLoaded', loadOrders);
+  </script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - FoodNest</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .admin-tab {
+      padding: 10px 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .admin-tab.active {
+      background: var(--charcoal);
+      color: white;
+    }
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--charcoal);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .data-table th, .data-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .data-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wordmark">
+        <div class="brand-badge" style="background:var(--charcoal);">ADM</div>
+        <span>FoodNest Admin Console</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Live Website</a>
+        <a href="restaurants.html">Restaurants</a>
+        <a href="smartbite.html">SmartBite</a>
+      </nav>
+      <div class="header-actions">
+        <div id="user-nav-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 32px 24px 64px;">
+    <!-- Top Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-size:2rem;">Admin Operations & Catalog Dashboard</h1>
+        <p style="color:var(--text-muted); font-size:0.92rem;">Authorized operations for orders, restaurant catalog, and store sync</p>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button id="clear-cache-btn" class="btn btn-sm btn-secondary" style="color:#ea580c;">Sync Platform Catalog</button>
+        <button id="refresh-dashboard-btn" class="btn btn-sm btn-primary">Refresh Metrics</button>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:32px;">
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">TOTAL ORDERS</span>
+        <span id="stat-orders" class="stat-val tabular">0</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">ACTIVE PIPELINE</span>
+        <span id="stat-active" class="stat-val tabular" style="color:var(--primary);">0</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">GROSS SALES</span>
+        <span id="stat-revenue" class="stat-val tabular">₹0</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">ACTIVE RESTAURANTS</span>
+        <span id="stat-restaurants" class="stat-val tabular">8</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">CATALOG DISHES</span>
+        <span id="stat-hits" class="stat-val tabular" style="color:#15803d;">42</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">FULFILLED ORDERS</span>
+        <span id="stat-misses" class="stat-val tabular" style="color:#0284c7;">0</span>
+      </div>
+    </div>
+
+    <!-- Tab Selector -->
+    <div style="display:flex; gap:10px; margin-bottom:24px;">
+      <button class="admin-tab active" data-tab="orders-tab">Orders Pipeline</button>
+      <button class="admin-tab" data-tab="food-tab">Food Catalog & Availability</button>
+      <button class="admin-tab" data-tab="benchmark-tab">Internal Diagnostics</button>
+    </div>
+
+    <!-- Tab 1: Orders Pipeline -->
+    <div id="orders-tab" class="card" style="padding:24px; overflow-x:auto;">
+      <h3 style="font-size:1.2rem; margin-bottom:16px;">Customer Orders Stream</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Restaurant</th>
+            <th>Items</th>
+            <th>Total Amount</th>
+            <th>Current Status</th>
+            <th>Update Lifecycle Action</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table-body">
+          <tr><td colspan="7" style="text-align:center; padding:24px;">Loading orders from MongoDB...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 2: Food Items & Cache Invalidation Demo -->
+    <div id="food-tab" class="card" style="padding:24px; display:none; overflow-x:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <h3 style="font-size:1.2rem;">Food Catalog & Cache Invalidation Controls</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted);">
+            Toggling availability or changing prices automatically triggers targeted Redis cache eviction!
+          </p>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Restaurant</th>
+            <th>Category</th>
+            <th>Price (₹)</th>
+            <th>Availability</th>
+            <th>Quick Actions</th>
+          </tr>
+        </thead>
+        <tbody id="food-table-body">
+          <tr><td colspan="6" style="text-align:center; padding:24px;">Loading menu items from MongoDB...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tab 3: System Diagnostic Benchmark -->
+    <div id="benchmark-tab" class="card" style="padding:28px; display:none;">
+      <div style="margin-bottom:20px;">
+        <span style="background:#e0e7ff; color:#3730a3; padding:4px 10px; border-radius:6px; font-size:0.75rem; font-weight:700;">SYSTEM DIAGNOSTICS</span>
+        <h3 style="font-size:1.3rem; margin:8px 0 6px;">Database & Cache Query Latency Benchmark</h3>
+        <p style="font-size:0.9rem; color:var(--text-muted); max-width:750px;">
+          Diagnostic tool to test network roundtrips and read latencies between primary storage and cache layer.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:16px; align-items:center; margin-bottom:24px;">
+        <label style="font-weight:600; font-size:0.9rem;">Repetitions (Iterations):</label>
+        <select id="benchmark-iterations" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+          <option value="5">5 Iterations</option>
+          <option value="10" selected>10 Iterations</option>
+          <option value="20">20 Iterations</option>
+        </select>
+        <button id="run-benchmark-btn" class="btn btn-primary btn-sm">Execute Lab Benchmark</button>
+      </div>
+
+      <div id="benchmark-results" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-bottom:24px;">
+          <div style="background:#f1f5f9; padding:16px; border-radius:10px; text-align:center;">
+            <div style="font-size:0.8rem; color:var(--text-muted);">AVG MONGODB QUERY TIME</div>
+            <div id="bm-mongo-avg" style="font-size:1.8rem; font-weight:800; color:#0f172a;" class="tabular">0 ms</div>
+          </div>
+          <div style="background:#dcfce7; padding:16px; border-radius:10px; text-align:center;">
+            <div style="font-size:0.8rem; color:#15803d;">AVG REDIS IN-MEMORY TIME</div>
+            <div id="bm-redis-avg" style="font-size:1.8rem; font-weight:800; color:#15803d;" class="tabular">0 ms</div>
+          </div>
+          <div style="background:#fff7ed; padding:16px; border-radius:10px; text-align:center;">
+            <div style="font-size:0.8rem; color:#ea580c;">LATENCY REDUCTION</div>
+            <div id="bm-reduction" style="font-size:1.8rem; font-weight:800; color:#ea580c;" class="tabular">0%</div>
+          </div>
+        </div>
+
+        <h4 style="font-size:1rem; margin-bottom:12px;">Iteration Breakdown (Actual Measured Times)</h4>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>Primary Storage Latency (ms)</th>
+              <th>Cache Layer Latency (ms)</th>
+              <th>Performance Lead</th>
+            </tr>
+          </thead>
+          <tbody id="benchmark-runs-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Tab switching
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        ['orders-tab', 'food-tab', 'benchmark-tab'].forEach(id => {
+          document.getElementById(id).style.display = 'none';
+        });
+        document.getElementById(tab.dataset.tab).style.display = 'block';
+
+        if (tab.dataset.tab === 'food-tab') loadFoodCatalog();
+      });
+    });
+
+    async function loadAdminDashboard() {
+      if (!api.currentUser || api.currentUser.role !== 'ADMIN') {
+        alert('Admin access required. Please sign in as admin@foodnest.com');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const stats = await api.getAdminDashboard();
+        document.getElementById('stat-orders').textContent = stats.totalOrders;
+        document.getElementById('stat-active').textContent = stats.activeOrders;
+        document.getElementById('stat-revenue').textContent = `₹${stats.totalRevenue.toFixed(2)}`;
+        document.getElementById('stat-restaurants').textContent = stats.totalRestaurants;
+        document.getElementById('stat-hits').textContent = stats.redisCacheHits;
+        document.getElementById('stat-misses').textContent = stats.redisCacheMisses;
+
+        // Load orders
+        const orders = await api.getAdminOrders();
+        renderOrdersTable(orders);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('orders-table-body');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:32px;">No customer orders placed yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td><strong>${o.orderNumber}</strong></td>
+          <td>${o.customerName}<br><span style="font-size:0.75rem; color:var(--text-muted);">${o.customerPhone || ''}</span></td>
+          <td>${o.restaurantName}</td>
+          <td>${o.items ? o.items.length : 0} dishes</td>
+          <td class="tabular font-weight-700">₹${o.totalAmount.toFixed(2)}</td>
+          <td><span style="font-size:0.78rem; font-weight:700; background:#f1f5f9; padding:3px 8px; border-radius:4px;">${o.orderStatus}</span></td>
+          <td>
+            <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:4px 8px; border-radius:6px; font-family:inherit; font-size:0.82rem;">
+              <option value="" disabled selected>Update to...</option>
+              <option value="CONFIRMED">CONFIRMED</option>
+              <option value="PREPARING">PREPARING</option>
+              <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+              <option value="DELIVERED">DELIVERED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.updateOrderStatus = async (orderId, newStatus) => {
+      try {
+        await api.updateOrderStatus(orderId, newStatus);
+        showToast(`Order status updated to ${newStatus}`, 'success');
+        loadAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+
+    async function loadFoodCatalog() {
+      const tbody = document.getElementById('food-table-body');
+      try {
+        const items = await api.getFood();
+        tbody.innerHTML = items.map(item => `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="${item.vegetarian ? 'veg-indicator' : 'non-veg-indicator'}"></span>
+                <strong>${item.name}</strong>
+              </div>
+            </td>
+            <td>${item.restaurantName}</td>
+            <td>${item.category}</td>
+            <td class="tabular">₹${item.price}</td>
+            <td>
+              <span style="color:${item.available ? '#16a34a' : '#dc2626'}; font-weight:700; font-size:0.8rem;">
+                ${item.available ? 'In Stock' : 'Out of Stock'}
+              </span>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-sm btn-secondary" onclick="toggleStock('${item.id}', ${!item.available})">
+                  ${item.available ? 'Mark Unavailable' : 'Mark Available'}
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="changePricePrompt('${item.id}', ${item.price})">
+                  Edit Price
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:#dc2626; text-align:center;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    window.toggleStock = async (id, newAvailability) => {
+      try {
+        await api.updateFoodAvailability(id, newAvailability);
+        showToast('Updated item availability and evicted Redis caches!', 'success');
+        loadFoodCatalog();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+
+    window.changePricePrompt = async (id, oldPrice) => {
+      const newPriceStr = prompt('Enter new price in INR (₹):', oldPrice);
+      if (newPriceStr === null) return;
+      const price = parseFloat(newPriceStr);
+      if (isNaN(price) || price <= 0) {
+        showToast('Invalid price', 'error');
+        return;
+      }
+      try {
+        await api.updateFoodPrice(id, price);
+        showToast(`Updated price to ₹${price} and evicted caches!`, 'success');
+        loadFoodCatalog();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+
+    // Performance Benchmark Runner
+    document.getElementById('run-benchmark-btn').addEventListener('click', async () => {
+      const iters = parseInt(document.getElementById('benchmark-iterations').value);
+      const btn = document.getElementById('run-benchmark-btn');
+      btn.disabled = true;
+      btn.textContent = 'Running Benchmark Repetitions...';
+
+      try {
+        const res = await api.runBenchmark(iters);
+        document.getElementById('benchmark-results').style.display = 'block';
+        document.getElementById('bm-mongo-avg').textContent = `${res.avgMongoLatencyMs} ms`;
+        document.getElementById('bm-redis-avg').textContent = `${res.avgRedisLatencyMs} ms`;
+        document.getElementById('bm-reduction').textContent = `${res.latencyReductionPercentage}% Faster`;
+
+        document.getElementById('benchmark-runs-body').innerHTML = res.runs.map(r => `
+          <tr>
+            <td>Iteration #${r.iteration}</td>
+            <td class="tabular">${r.mongoLatencyMs} ms</td>
+            <td class="tabular" style="color:#15803d; font-weight:600;">${r.redisLatencyMs} ms</td>
+            <td><span style="color:#15803d; font-weight:700;">Redis In-Memory</span></td>
+          </tr>
+        `).join('');
+
+        showToast('Lab benchmark completed successfully!', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Execute Lab Benchmark';
+      }
+    });
+
+    document.getElementById('clear-cache-btn').addEventListener('click', async () => {
+      try {
+        await api.clearRedisCache();
+        showToast('Redis cache cleared successfully', 'info');
+        loadAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    document.getElementById('refresh-dashboard-btn').addEventListener('click', loadAdminDashboard);
+    document.addEventListener('DOMContentLoaded', loadAdminDashboard);
+  </script>
+</body>
+</html>

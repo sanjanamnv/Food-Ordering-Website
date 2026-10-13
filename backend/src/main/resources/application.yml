@@ -1,0 +1,56 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: foodnest-backend
+
+  # MongoDB Atlas Configuration
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://<username>:<password>@cluster0.mongodb.net/foodnest_db?retryWrites=true&w=majority}
+      database: ${MONGODB_DATABASE:foodnest_db}
+      auto-index-creation: true
+
+    # Redis Cloud Configuration
+    redis:
+      host: ${REDIS_HOST:redis-12345.c1.asia-southeast1-1.gce.cloud.redislabs.com}
+      port: ${REDIS_PORT:12345}
+      username: ${REDIS_USERNAME:default}
+      password: ${REDIS_PASSWORD:your-redis-password}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 2000ms
+
+# FoodNest Application Specific Properties
+foodnest:
+  jwt:
+    # 256-bit secret key for HMAC-SHA256 signing
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 hours
+  cache:
+    # Time to live configurations in seconds
+    restaurants-ttl-seconds: ${CACHE_RESTAURANTS_TTL:600} # 10 minutes
+    menu-ttl-seconds: ${CACHE_MENU_TTL:600}               # 10 minutes
+    recommendations-ttl-seconds: ${CACHE_REC_TTL:300}     # 5 minutes
+    rate-limit-window-seconds: 60
+    rate-limit-max-attempts: 5
+  seeding:
+    enabled: ${SEED_DATA_ENABLED:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

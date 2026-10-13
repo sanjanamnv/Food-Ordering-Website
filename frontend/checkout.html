@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - FoodNest</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wordmark">
+        <div class="brand-badge">FN</div>
+        <span>FoodNest</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="restaurants.html">Restaurants</a>
+        <a href="smartbite.html">SmartBite</a>
+        <a href="orders.html">My Orders</a>
+      </nav>
+      <div class="header-actions">
+        <div id="user-nav-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 36px 24px 64px;">
+    <h1 style="font-size:2rem; margin-bottom:24px;">Secure Checkout</h1>
+
+    <div style="display:grid; grid-template-columns: 1.3fr 0.9fr; gap:32px; align-items:start;">
+      <!-- Left: Delivery Address & Payment Method -->
+      <div>
+        <div class="card" style="padding:28px; margin-bottom:24px;">
+          <h2 style="font-size:1.3rem; margin-bottom:16px;">1. Delivery Address</h2>
+          <form id="checkout-form">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">Contact Name *</label>
+                <input type="text" id="cust-name" required style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+              </div>
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">Phone Number *</label>
+                <input type="tel" id="cust-phone" required style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+              </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">Street Address / Flat No / Landmark *</label>
+              <input type="text" id="cust-street" required placeholder="e.g. Flat 402, Sunshine Apts, MG Road" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">City *</label>
+                <input type="text" id="cust-city" required value="Bengaluru" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+              </div>
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">State *</label>
+                <input type="text" id="cust-state" required value="Karnataka" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+              </div>
+              <div>
+                <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;">Pin Code *</label>
+                <input type="text" id="cust-pin" required value="560001" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit;">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" style="padding:28px;">
+          <h2 style="font-size:1.3rem; margin-bottom:16px;">2. Payment Method</h2>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <label style="display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--border); border-radius:10px; cursor:pointer;">
+              <input type="radio" name="payment-method" value="CASH_ON_DELIVERY" checked style="accent-color:var(--primary); width:18px; height:18px;">
+              <div>
+                <span style="font-weight:700; display:block;">Cash on Delivery (COD)</span>
+                <span style="font-size:0.82rem; color:var(--text-muted);">Pay in cash or UPI when order is handed over</span>
+              </div>
+            </label>
+
+            <label style="display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--border); border-radius:10px; cursor:pointer;">
+              <input type="radio" name="payment-method" value="SIMULATED_ONLINE_UPI" style="accent-color:var(--primary); width:18px; height:18px;">
+              <div>
+                <span style="font-weight:700; display:block;">Simulated Online UPI / Card (Demo)</span>
+                <span style="font-size:0.82rem; color:var(--text-muted);">Educational lab simulation (no real financial charge)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Order Snapshot -->
+      <div class="card" style="padding:24px; position:sticky; top:90px;">
+        <h2 style="font-size:1.25rem; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">Order Summary</h2>
+        <div id="checkout-items" style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px; max-height:260px; overflow-y:auto;">
+          <!-- Items from cart -->
+        </div>
+
+        <div style="border-top:1px solid var(--border); padding-top:14px; display:flex; flex-direction:column; gap:8px; font-size:0.9rem;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Subtotal</span>
+            <span id="co-subtotal" class="tabular">₹0.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Delivery Fee</span>
+            <span id="co-delivery" class="tabular">₹40.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">5% GST</span>
+            <span id="co-tax" class="tabular">₹0.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+            <span style="font-size:1.1rem; font-weight:700;">Grand Total</span>
+            <span id="co-total" style="font-size:1.3rem; font-weight:800; color:var(--primary);" class="tabular">₹0.00</span>
+          </div>
+        </div>
+
+        <button id="place-order-btn" class="btn btn-primary" style="width:100%; margin-top:20px; padding:14px; font-size:1rem;">Place Order Now</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!api.currentUser) {
+        window.location.href = 'login.html?redirect=checkout.html';
+        return;
+      }
+
+      if (cart.cart.length === 0) {
+        window.location.href = 'cart.html';
+        return;
+      }
+
+      // Prefill user data
+      const u = api.currentUser;
+      document.getElementById('cust-name').value = u.name || '';
+      document.getElementById('cust-phone').value = u.phone || '';
+      if (u.addresses && u.addresses.length > 0) {
+        const a = u.addresses[0];
+        document.getElementById('cust-street').value = a.street || '';
+        document.getElementById('cust-city').value = a.city || 'Bengaluru';
+        document.getElementById('cust-state').value = a.state || 'Karnataka';
+        document.getElementById('cust-pin').value = a.pincode || '560001';
+      }
+
+      // Render summary
+      const itemsList = document.getElementById('checkout-items');
+      itemsList.innerHTML = cart.cart.map(item => `
+        <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+          <span>${item.quantity} × ${item.name}</span>
+          <span style="font-weight:600;" class="tabular">₹${(item.price * item.quantity).toFixed(2)}</span>
+        </div>
+      `).join('');
+
+      const subtotal = cart.getSubtotal();
+      const delivery = subtotal >= 500 ? 0.0 : 40.0;
+      const tax = Math.round((subtotal * 0.05) * 100) / 100;
+      const total = Math.round((subtotal + delivery + tax) * 100) / 100;
+
+      document.getElementById('co-subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('co-delivery').textContent = delivery === 0 ? 'FREE' : `₹${delivery.toFixed(2)}`;
+      document.getElementById('co-tax').textContent = `₹${tax.toFixed(2)}`;
+      document.getElementById('co-total').textContent = `₹${total.toFixed(2)}`;
+
+      document.getElementById('place-order-btn').addEventListener('click', async () => {
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const street = document.getElementById('cust-street').value.trim();
+        const city = document.getElementById('cust-city').value.trim();
+        const state = document.getElementById('cust-state').value.trim();
+        const pincode = document.getElementById('cust-pin').value.trim();
+
+        if (!name || !phone || !street || !city || !pincode) {
+          showToast('Please fill in all delivery address fields', 'error');
+          return;
+        }
+
+        const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+        const couponCode = localStorage.getItem('foodnest_coupon') || null;
+
+        const orderPayload = {
+          items: cart.cart.map(i => ({ foodItemId: i.id, quantity: i.quantity })),
+          deliveryAddress: { street, city, state, pincode, landmark: '' },
+          couponCode,
+          paymentMethod
+        };
+
+        const btn = document.getElementById('place-order-btn');
+        btn.disabled = true;
+        btn.textContent = 'Processing Order with MongoDB...';
+
+        try {
+          const createdOrder = await api.createOrder(orderPayload);
+          cart.clear();
+          localStorage.removeItem('foodnest_coupon');
+          showToast(`Order #${createdOrder.orderNumber} placed successfully!`, 'success');
+          setTimeout(() => {
+            window.location.href = `orders.html?highlight=${createdOrder.id}`;
+          }, 1000);
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Place Order Now';
+          showToast(err.message, 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

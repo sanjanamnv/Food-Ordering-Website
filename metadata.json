@@ -1,0 +1,6 @@
+{
+  "name": "FoodNest - Food Ordering with MongoDB & Redis",
+  "description": "Full-stack food ordering platform with SmartBite personalized recommendations, Redis caching, and MongoDB Atlas persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart - FoodNest</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wordmark">
+        <div class="brand-badge">FN</div>
+        <span>FoodNest</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="restaurants.html">Restaurants</a>
+        <a href="smartbite.html">SmartBite</a>
+        <a href="orders.html">My Orders</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="cart-trigger active" aria-label="Shopping Cart">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+          <span class="cart-count" style="display:none;">0</span>
+        </a>
+        <div id="user-nav-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 36px 24px 64px;">
+    <h1 style="font-size:2rem; margin-bottom:24px;">Your Food Basket</h1>
+
+    <div id="cart-container" style="display:grid; grid-template-columns: 1.4fr 0.8fr; gap:32px; align-items:start;">
+      <!-- Left: Itemized Cart -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+          <h2 style="font-size:1.25rem;">Selected Dishes</h2>
+          <button id="clear-cart-btn" class="btn btn-sm btn-secondary" style="color:#dc2626;">Clear Basket</button>
+        </div>
+
+        <div id="cart-items-list" style="display:flex; flex-direction:column; gap:16px;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Right: Bill Summary & Coupon -->
+      <div class="card" style="padding:24px; position:sticky; top:90px;">
+        <h2 style="font-size:1.25rem; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">Bill Details</h2>
+
+        <!-- Coupon Code Input -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:0.85rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Have a Promo Code?</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="coupon-code-input" placeholder="e.g. WELCOME50, TASTY20" style="flex:1; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; text-transform:uppercase;">
+            <button id="apply-coupon-btn" class="btn btn-secondary btn-sm">Apply</button>
+          </div>
+          <div id="coupon-msg" style="font-size:0.82rem; margin-top:6px;"></div>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:0.92rem; border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Item Subtotal</span>
+            <span id="bill-subtotal" class="tabular font-weight-600">₹0.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Delivery Fee (Free over ₹500)</span>
+            <span id="bill-delivery" class="tabular">₹40.00</span>
+          </div>
+          <div id="bill-discount-row" style="display:none; justify-content:space-between; color:#15803d; font-weight:600;">
+            <span>Coupon Savings</span>
+            <span id="bill-discount" class="tabular">-₹0.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-muted);">Taxes & Packaging (5% GST)</span>
+            <span id="bill-tax" class="tabular">₹0.00</span>
+          </div>
+        </div>
+
+        <!-- Final Total -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <span style="font-size:1.1rem; font-weight:700;">To Pay</span>
+          <span id="bill-total" style="font-size:1.4rem; font-weight:800; color:var(--primary);" class="tabular">₹0.00</span>
+        </div>
+
+        <button id="checkout-btn" class="btn btn-primary" style="width:100%; padding:12px;">Proceed to Checkout</button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-cart-state" class="card" style="display:none; text-align:center; padding:64px 24px;">
+      <div style="font-size:3rem; margin-bottom:12px;">🛒</div>
+      <h2 style="font-size:1.4rem; margin-bottom:8px;">Your basket is empty</h2>
+      <p style="color:var(--text-muted); margin-bottom:24px;">Looks like you haven't added anything to your cart yet.</p>
+      <a href="restaurants.html" class="btn btn-primary">Browse Restaurants</a>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    let currentDiscount = 0;
+    let appliedCoupon = null;
+
+    function renderCart(items) {
+      const container = document.getElementById('cart-container');
+      const emptyState = document.getElementById('empty-cart-state');
+      const list = document.getElementById('cart-items-list');
+
+      if (!items || items.length === 0) {
+        container.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      container.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      list.innerHTML = items.map(item => `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="${item.vegetarian ? 'veg-indicator' : 'non-veg-indicator'}"></span>
+            <div>
+              <h4 style="font-size:1rem; margin-bottom:2px;">${item.name}</h4>
+              <span style="font-size:0.85rem; color:var(--text-muted);" class="tabular">₹${item.price} each</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="display:flex; align-items:center; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <button onclick="cart.updateQuantity('${item.id}', ${item.quantity - 1})" style="border:none; background:white; padding:4px 10px; cursor:pointer; font-weight:700;">-</button>
+              <span style="padding:4px 10px; font-size:0.9rem; font-weight:600;" class="tabular">${item.quantity}</span>
+              <button onclick="cart.updateQuantity('${item.id}', ${item.quantity + 1})" style="border:none; background:white; padding:4px 10px; cursor:pointer; font-weight:700;">+</button>
+            </div>
+            <span style="font-weight:700; width:70px; text-align:right;" class="tabular">₹${(item.price * item.quantity).toFixed(2)}</span>
+            <button onclick="cart.removeItem('${item.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem;" title="Remove">✕</button>
+          </div>
+        </div>
+      `).join('');
+
+      recalculateBill(items);
+    }
+
+    function recalculateBill(items) {
+      const subtotal = cart.getSubtotal();
+      const deliveryFee = subtotal >= 500 ? 0.0 : 40.0;
+      const discountedSubtotal = Math.max(0, subtotal - currentDiscount);
+      const tax = Math.round((discountedSubtotal * 0.05) * 100) / 100;
+      const total = Math.round((discountedSubtotal + deliveryFee + tax) * 100) / 100;
+
+      document.getElementById('bill-subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('bill-delivery').textContent = deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`;
+      document.getElementById('bill-tax').textContent = `₹${tax.toFixed(2)}`;
+      document.getElementById('bill-total').textContent = `₹${total.toFixed(2)}`;
+
+      const discountRow = document.getElementById('bill-discount-row');
+      if (currentDiscount > 0) {
+        discountRow.style.display = 'flex';
+        document.getElementById('bill-discount').textContent = `-₹${currentDiscount.toFixed(2)}`;
+      } else {
+        discountRow.style.display = 'none';
+      }
+    }
+
+    document.getElementById('apply-coupon-btn').addEventListener('click', async () => {
+      const code = document.getElementById('coupon-code-input').value.trim();
+      const msg = document.getElementById('coupon-msg');
+      if (!code) return;
+
+      try {
+        const res = await api.validateCoupon(code, cart.getSubtotal());
+        if (res.valid) {
+          currentDiscount = res.discount;
+          appliedCoupon = res.code;
+          localStorage.setItem('foodnest_coupon', res.code);
+          msg.style.color = '#15803d';
+          msg.textContent = `✓ ${res.message} (Saved ₹${res.discount})`;
+          showToast(`Coupon ${code} applied! Saved ₹${res.discount}`, 'success');
+        } else {
+          currentDiscount = 0;
+          appliedCoupon = null;
+          localStorage.removeItem('foodnest_coupon');
+          msg.style.color = '#dc2626';
+          msg.textContent = `✕ ${res.message}`;
+        }
+        recalculateBill(cart.cart);
+      } catch (err) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Failed to validate coupon';
+      }
+    });
+
+    document.getElementById('clear-cart-btn').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear your cart?')) {
+        cart.clear();
+      }
+    });
+
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+      if (!api.currentUser) {
+        showToast('Please sign in to proceed with checkout', 'info');
+        setTimeout(() => window.location.href = 'login.html?redirect=checkout.html', 500);
+        return;
+      }
+      window.location.href = 'checkout.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cart.subscribe(renderCart);
+    });
+  </script>
+</body>
+</html>
